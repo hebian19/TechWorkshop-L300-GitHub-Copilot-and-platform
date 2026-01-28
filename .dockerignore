@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Documentation
+docs/
+media/
+*.md
+!src/README.md
+
+# Infrastructure
+infra/
+
+# Misc
+.dockerignore
+Dockerfile
+azure.yaml
+*.log

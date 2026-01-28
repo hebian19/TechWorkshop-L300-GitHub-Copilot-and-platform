@@ -1,0 +1,14 @@
+name: zavastore
+metadata:
+  template: azd-init
+services:
+  web:
+    project: ./src
+    language: dotnet
+    host: appservice
+    docker:
+      path: ./Dockerfile
+      context: .
+infra:
+  provider: bicep
+  path: ./infra
