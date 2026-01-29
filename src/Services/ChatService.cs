@@ -91,9 +91,24 @@ namespace ZavaStorefront.Services
                     return "Unable to process the response. Please try again later.";
                 }
             }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogWarning(ex, "Request to Phi4 endpoint was canceled or timed out");
+                return "The request timed out. Please try again.";
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP error calling Phi4 endpoint");
+                return "Unable to reach the chat service. Please try again later.";
+            }
+            catch (AuthenticationFailedException ex)
+            {
+                _logger.LogError(ex, "Authentication failed while acquiring token for Phi4 endpoint");
+                return "The chat service is temporarily unavailable due to authentication issues. Please try again later.";
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calling Phi4 endpoint");
+                _logger.LogError(ex, "Unexpected error calling Phi4 endpoint");
                 return "An unexpected error occurred. Please try again later.";
             }
         }
