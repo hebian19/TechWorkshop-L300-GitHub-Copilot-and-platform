@@ -50,8 +50,10 @@ resource gpt4Deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-1
   }
 }
 
-// Note: Phi models can be added via Azure Portal after deployment
-// Model availability varies by region and subscription
+// Note: Additional models (like Phi) can be added via Azure Portal after deployment
+// Model availability varies by region, subscription, and capacity
+// For westus3 region: GPT-4o is available via GlobalStandard deployment
+// Check Azure OpenAI model availability: https://learn.microsoft.com/azure/ai-services/openai/concepts/models
 
 output id string = aiServices.id
 output name string = aiServices.name
