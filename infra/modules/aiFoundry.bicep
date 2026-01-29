@@ -72,7 +72,7 @@ resource cognitiveServicesUserRoleAssignment 'Microsoft.Authorization/roleAssign
 }
 
 // Diagnostic settings to send all logs to Log Analytics
-resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(logAnalyticsWorkspaceId)) {
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01' = if (!empty(logAnalyticsWorkspaceId)) {
   name: '${aiServices.name}-diagnostics'
   scope: aiServices
   properties: {
