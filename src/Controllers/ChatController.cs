@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ZavaStorefront.Models;
 using ZavaStorefront.Services;
 
 namespace ZavaStorefront.Controllers
@@ -41,10 +42,5 @@ namespace ZavaStorefront.Controllers
             
             return Json(new { response });
         }
-    }
-
-    public class ChatRequest
-    {
-        public string Message { get; set; } = string.Empty;
     }
 }

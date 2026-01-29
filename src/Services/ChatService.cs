@@ -10,14 +10,14 @@ namespace ZavaStorefront.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<ChatService> _logger;
         private readonly HttpClient _httpClient;
-        private readonly DefaultAzureCredential _credential;
+        private readonly TokenCredential _credential;
 
-        public ChatService(IConfiguration configuration, ILogger<ChatService> logger, IHttpClientFactory httpClientFactory)
+        public ChatService(IConfiguration configuration, ILogger<ChatService> logger, IHttpClientFactory httpClientFactory, TokenCredential credential)
         {
             _configuration = configuration;
             _logger = logger;
             _httpClient = httpClientFactory.CreateClient();
-            _credential = new DefaultAzureCredential();
+            _credential = credential;
         }
 
         public async Task<string> SendMessageAsync(string userMessage)
@@ -37,7 +37,7 @@ namespace ZavaStorefront.Services
 
                 // Get access token using managed identity
                 var tokenRequestContext = new TokenRequestContext(new[] { "https://cognitiveservices.azure.com/.default" });
-                var accessToken = await _credential.GetTokenAsync(tokenRequestContext);
+                var accessToken = await _credential.GetTokenAsync(tokenRequestContext, default);
 
                 var requestBody = new
                 {
@@ -70,7 +70,7 @@ namespace ZavaStorefront.Services
 
                 try
                 {
-                    var jsonResponse = JsonDocument.Parse(responseContent);
+                    using var jsonResponse = JsonDocument.Parse(responseContent);
                     if (!jsonResponse.RootElement.TryGetProperty("choices", out var choices) || 
                         choices.GetArrayLength() == 0)
                     {

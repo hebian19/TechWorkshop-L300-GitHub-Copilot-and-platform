@@ -1,3 +1,5 @@
+using Azure.Core;
+using Azure.Identity;
 using ZavaStorefront.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,7 @@ builder.Services.AddSession(options =>
 // Register application services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<TokenCredential>(new DefaultAzureCredential());
 builder.Services.AddSingleton<ProductService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<ChatService>();
