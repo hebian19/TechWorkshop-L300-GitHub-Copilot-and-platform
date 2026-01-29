@@ -10,12 +10,14 @@ namespace ZavaStorefront.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<ChatService> _logger;
         private readonly HttpClient _httpClient;
+        private readonly DefaultAzureCredential _credential;
 
         public ChatService(IConfiguration configuration, ILogger<ChatService> logger, IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _logger = logger;
             _httpClient = httpClientFactory.CreateClient();
+            _credential = new DefaultAzureCredential();
         }
 
         public async Task<string> SendMessageAsync(string userMessage)
@@ -28,15 +30,14 @@ namespace ZavaStorefront.Services
                 if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(deploymentName))
                 {
                     _logger.LogError("Phi4 endpoint configuration is missing");
-                    return "Error: Chat service is not properly configured. Please check Phi4:Endpoint and Phi4:DeploymentName settings.";
+                    return "Chat service is not configured. Please contact the administrator.";
                 }
 
                 var requestUrl = $"{endpoint.TrimEnd('/')}/openai/deployments/{deploymentName}/chat/completions?api-version=2024-08-01-preview";
 
                 // Get access token using managed identity
-                var credential = new DefaultAzureCredential();
                 var tokenRequestContext = new TokenRequestContext(new[] { "https://cognitiveservices.azure.com/.default" });
-                var accessToken = await credential.GetTokenAsync(tokenRequestContext);
+                var accessToken = await _credential.GetTokenAsync(tokenRequestContext);
 
                 var requestBody = new
                 {
@@ -56,7 +57,7 @@ namespace ZavaStorefront.Services
                 request.Headers.Add("Authorization", $"Bearer {accessToken.Token}");
                 request.Content = httpContent;
 
-                _logger.LogInformation("Sending message to Phi4 endpoint: {Endpoint}", requestUrl);
+                _logger.LogInformation("Sending message to Phi4 endpoint");
 
                 var response = await _httpClient.SendAsync(request);
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -64,22 +65,36 @@ namespace ZavaStorefront.Services
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogError("Phi4 API request failed with status {StatusCode}: {Response}", response.StatusCode, responseContent);
-                    return $"Error: Unable to get response from chat service (Status: {response.StatusCode})";
+                    return "Unable to process your request at this time. Please try again later.";
                 }
 
-                var jsonResponse = JsonDocument.Parse(responseContent);
-                var assistantMessage = jsonResponse.RootElement
-                    .GetProperty("choices")[0]
-                    .GetProperty("message")
-                    .GetProperty("content")
-                    .GetString();
+                try
+                {
+                    var jsonResponse = JsonDocument.Parse(responseContent);
+                    if (!jsonResponse.RootElement.TryGetProperty("choices", out var choices) || 
+                        choices.GetArrayLength() == 0)
+                    {
+                        _logger.LogError("Unexpected API response format: no choices found");
+                        return "Unable to process your request at this time. Please try again later.";
+                    }
 
-                return assistantMessage ?? "No response received.";
+                    var assistantMessage = choices[0]
+                        .GetProperty("message")
+                        .GetProperty("content")
+                        .GetString();
+
+                    return assistantMessage ?? "No response received.";
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, "Failed to parse API response");
+                    return "Unable to process the response. Please try again later.";
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calling Phi4 endpoint");
-                return $"Error: {ex.Message}";
+                return "An unexpected error occurred. Please try again later.";
             }
         }
     }
