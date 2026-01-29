@@ -82,10 +82,6 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01' =
         categoryGroup: 'allLogs'
         enabled: true
       }
-      {
-        categoryGroup: 'audit'
-        enabled: true
-      }
     ]
     metrics: [
       {
