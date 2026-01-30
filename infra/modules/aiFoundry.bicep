@@ -57,8 +57,10 @@ resource gpt4Deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-1
   }
 }
 
-// Note: Phi models can be added via Azure Portal after deployment
-// Model availability varies by region and subscription
+// Note: Additional models (like Phi) can be added via Azure Portal after deployment
+// Model availability varies by region, subscription, and capacity
+// For westus3 region: GPT-4o is available via GlobalStandard deployment
+// Check Azure OpenAI model availability: https://learn.microsoft.com/azure/ai-services/openai/concepts/models
 
 // Cognitive Services User role assignment for App Service managed identity
 resource cognitiveServicesUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(appServicePrincipalId)) {
